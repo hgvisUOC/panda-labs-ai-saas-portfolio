@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadScout AI | Autonomous B2B Prospect Enrichment & Outreach</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.css">
+  <script src="../backend-simulations.js"></script>
+  <style>
+    :root {
+      --bg-canvas: #07090e;
+      --bg-surface-1: rgba(17, 24, 39, 0.75);
+      --bg-surface-2: rgba(30, 41, 59, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-default: rgba(255, 255, 255, 0.12);
+      --border-active: rgba(99, 102, 241, 0.5);
+      --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      --text-main: #f9fafb;
+      --text-muted: #94a3b8;
+      --text-tertiary: #64748b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-canvas);
+      background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 30px 24px;
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .badge-enterprise {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--glass-highlight);
+      padding: 20px;
+      border-radius: 12px;
+    }
+    .metric-title { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 26px; font-weight: 800; color: #fff; margin-top: 6px; }
+    .metric-sub { font-size: 12px; color: var(--emerald); margin-top: 4px; font-weight: 600; }
+    
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 440px;
+    }
+    .search-input {
+      background: var(--bg-surface-2);
+      border: 1px solid var(--border-default);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s var(--ease-snappy);
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-default);
+      color: #cbd5e1;
+    }
+    .btn-secondary:hover { background: rgba(51, 65, 85, 0.8); }
+    
+    .table-container {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--glass-highlight);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 720px; }
+    th {
+      padding: 16px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-default);
+      background: rgba(10, 15, 26, 0.4);
+    }
+    td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      color: #fff;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .status-enriched { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 480px;
+      max-width: 95vw;
+      background: #0a0f1a;
+      border-left: 1px solid var(--border-default);
+      box-shadow: -10px 0 40px rgba(0,0,0,0.7);
+      z-index: 101;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-snappy);
+      padding: 32px 28px;
+      overflow-y: auto;
+    }
+    .drawer.open { transform: translateX(0); }
+    .ai-box {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--border-active);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      font-style: italic;
+      margin: 12px 0 20px 0;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #111827;
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      z-index: 300;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s var(--ease-snappy);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+      body { padding: 20px 14px; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .search-wrap { max-width: 100%; }
+      .btn-group { width: 100%; justify-content: space-between; }
+      .btn-group .btn { flex: 1; justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+      .btn-group { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #06b6d4); display: flex; align-items: center; justify-content: center; font-size: 20px;">⚡</div>
+      <div>
+        <h1 style="font-size: 20px; font-weight: 700;">LeadScout AI</h1>
+        <p style="font-size: 12px; color: var(--text-muted);">Autonomous Prospect Enrichment & High-Intent Outreach</p>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="badge-enterprise">Apollo + Dropcontact Hook</span>
+      <span style="font-size: 13px; color: #cbd5e1;">Credits Balance: <strong id="creditCount" style="color: var(--emerald);">1,420</strong></span>
+    </div>
+  </header>
+
+  <section class="metrics-grid" aria-label="Pipeline Metrics">
+    <div class="metric-card">
+      <div class="metric-title">Total Active Prospects</div>
+      <div class="metric-value" id="totalProspects">1,248</div>
+      <div class="metric-sub">▲ 142 added this sprint</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Enriched by AI Engine</div>
+      <div class="metric-value" id="enrichedCount">3</div>
+      <div class="metric-sub">94.2% Intent Verification</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">High-Intent Buying Signals</div>
+      <div class="metric-value">842</div>
+      <div class="metric-sub">Series A/B + Tool Migration</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Pipeline Projected ARR</div>
+      <div class="metric-value">$184,500</div>
+      <div class="metric-sub">▲ 3.2x vs manual SDR cycle</div>
+    </div>
+  </section>
+
+  <div class="action-bar">
+    <div class="search-wrap">
+      <label for="searchBox" style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Search:</label>
+      <input type="text" id="searchBox" class="search-input" placeholder="Filter by name, company, or intent..." oninput="filterTable()">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="addSampleLead()">+ Add Target Account</button>
+      <button class="btn btn-secondary" onclick="exportData()">Export CSV</button>
+      <button class="btn" id="btnBatch" onclick="runBatchEnrichment()">⚡ Autonomous Batch Enrichment (20 Credits / Lead)</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Prospect Name & Role</th>
+          <th scope="col">Target Company</th>
+          <th scope="col">Industry</th>
+          <th scope="col">AI Intent Signal</th>
+          <th scope="col">Status</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody id="leadsBody">
+        <!-- populated via js -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Slide-out Drawer -->
+  <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerName">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700; color: #fff;" id="drawerName">Prospect AI File</h3>
+      <button style="background: none; border: none; color: #9ca3af; font-size: 20px; cursor: pointer;" onclick="closeDrawer()">✕</button>
+    </div>
+    <div id="drawerContent"></div>
+  </aside>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toastBox">Message</div>
+
+  <script>
+    let leads = [
+      { id: 1, name: "Marcus Vance", role: "VP of Revenue", company: "AuraCloud", industry: "B2B SaaS", status: "Enriched", intent: "Hiring 6 SDRs, Series B raised", email: "m.vance@auracloud.io", pitch: "Hi Marcus, noticed AuraCloud's Series B announcement and your recent headcount expansion for SDRs. We built an automated pipeline that cut ramp time by 40% for SaaS revenue teams. Worth a 5-min look?" },
+      { id: 2, name: "Elena Rostova", role: "Chief Marketing Officer", company: "FinTech Vantage", industry: "FinTech", status: "Enriched", intent: "Migrating to Supabase & Stripe Billing", email: "elena@fintechvantage.com", pitch: "Elena, saw your post regarding compliance bottlenecks during checkout migrations. Our enterprise checkout middleware guarantees zero payment downtime with instant fraud audits." },
+      { id: 3, name: "Devon Hughes", role: "Founder & CEO", company: "OmniLogistics", industry: "Supply Chain", status: "Pending", intent: "Looking for ERP automated dispatch", email: "devon@omnilogistics.co", pitch: "Devon, congrats on the recent 3PL distribution center in Chicago. We help enterprise freight operators automate fleet dispatch logs using lightweight webhook listeners." },
+      { id: 4, name: "Sarah Chen", role: "Head of Growth", company: "PulseHealth", industry: "HealthTech", status: "Enriched", intent: "Scaling patient acquisition funnels", email: "schen@pulsehealth.app", pitch: "Sarah, loved your podcast on patient retention loops. We created an HIPAA-compliant SMS triage bot that increased clinic appointment show-up rates to 91%." },
+      { id: 5, name: "Julian Thorne", role: "Managing Director", company: "Apex Capital Ventures", industry: "Venture Studio", status: "Pending", intent: "Auditing portfolio AI tech stack", email: "jthorne@apexventures.fund", pitch: "Julian, noticing your portfolio companies accelerating generative app adoption. Panda Labs engineers full-stack SaaS MVPs in under 3 weeks for seed-stage venture founders." }
+    ];
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toastBox');
+      toast.innerText = msg;
+      toast.style.borderColor = type === 'error' ? 'var(--rose)' : 'var(--accent)';
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3500);
+    }
+
+    function renderLeads() {
+      const tbody = document.getElementById('leadsBody');
+      tbody.innerHTML = '';
+      leads.forEach(l => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="display: flex; align-items: center;">
+              <div class="avatar">${l.name.split(' ').map(n=>n[0]).join('')}</div>
+              <div>
+                <div style="font-weight: 600; color: #fff;">${l.name}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">${l.role}</div>
+              </div>
+            </div>
+          </td>
+          <td><strong style="color: #e2e8f0;">${l.company}</strong></td>
+          <td><span style="font-size: 13px; color: #94a3b8;">${l.industry}</span></td>
+          <td><span style="font-size: 13px; color: #a5b4fc;">⚡ ${l.intent}</span></td>
+          <td><span class="status-pill ${l.status === 'Enriched' ? 'status-enriched' : 'status-pending'}">${l.status}</span></td>
+          <td>
+            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="openDrawer(${l.id})">Inspect AI Hook</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('enrichedCount').innerText = leads.filter(l => l.status === 'Enriched').length;
+    }
+
+    function runBatchEnrichment() {
+      const pending = leads.filter(l => l.status === 'Pending');
+      if (pending.length === 0) {
+        showToast("All current leads are already enriched by AI!", "info");
+        return;
+      }
+      const creditsEl = document.getElementById('creditCount');
+      let currentCredits = parseInt(creditsEl.innerText.replace(/,/g, ''));
+      let requiredCredits = pending.length * 20;
+
+      // Credit Overdraft Prevention
+      if (currentCredits < requiredCredits) {
+        showToast(`Insufficient credits (Needed: ${requiredCredits}, Balance: ${currentCredits}). Upgrade your plan.`, "error");
+        return;
+      }
+
+      const btn = document.getElementById('btnBatch');
+      btn.innerText = "⚡ Mining Buying Intent Signals...";
+      btn.style.opacity = "0.75";
+      btn.disabled = true;
+
+      setTimeout(() => {
+        currentCredits -= requiredCredits;
+        creditsEl.innerText = currentCredits.toLocaleString();
+        pending.forEach(l => l.status = 'Enriched');
+        renderLeads();
+        btn.innerText = "⚡ Autonomous Batch Enrichment (20 Credits / Lead)";
+        btn.style.opacity = "1";
+        btn.disabled = false;
+        showToast(`Success: Enriched ${pending.length} new prospects with verified company intent signals!`);
+      }, 700);
+    }
+
+    function openDrawer(id) {
+      const l = leads.find(item => item.id === id);
+      if (!l) return;
+      document.getElementById('drawerName').innerText = `${l.name} (${l.company})`;
+      document.getElementById('drawerContent').innerHTML = `
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">VERIFIED WORK EMAIL</div>
+          <div style="color: #60a5fa; font-weight: 600; font-size: 14px; margin-top: 4px;">${l.email}</div>
+        </div>
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">KEY BUYING SIGNAL</div>
+          <div style="color: #f3f4f6; font-size: 14px; margin-top: 4px;">${l.intent}</div>
+        </div>
+        <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">AI TAILORED OUTREACH HOOK</div>
+        <div class="ai-box">
+          "${l.pitch}"
+        </div>
+        <button class="btn" style="width: 100%; justify-content: center;" onclick="copyPitch('${l.pitch.replace(/'/g, "\\'")}')">
+          📋 Copy Cold Email Hook
+        </button>
+      `;
+      document.getElementById('drawer').classList.add('open');
+      document.getElementById('overlay').classList.add('open');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+    function copyPitch(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("Copied cold email hook to clipboard!");
+        }).catch(() => {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Copied cold email hook to clipboard!");
+      } catch (err) {
+        showToast("Clipboard blocked. Hook: " + text.slice(0, 40) + "...", "error");
+      }
+    }
+
+    function filterTable() {
+      const query = document.getElementById('searchBox').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('#leadsBody tr:not(#emptyStateRow)');
+      let matchedCount = 0;
+      rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        const matches = text.includes(query);
+        r.style.display = matches ? '' : 'none';
+        if (matches) matchedCount++;
+      });
+
+      const existingEmpty = document.getElementById('emptyStateRow');
+      if (matchedCount === 0) {
+        if (!existingEmpty) {
+          const tbody = document.getElementById('leadsBody');
+          const emptyTr = document.createElement('tr');
+          emptyTr.id = 'emptyStateRow';
+          emptyTr.innerHTML = `
+            <td colspan="6" class="empty-state" style="text-align: center; padding: 40px; color: var(--text-tertiary);">
+              <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+              <div style="font-size: 14px; font-weight: 600; color: #cbd5e1;">No matching prospects found</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Try searching for a different name, company, or buying intent.</div>
+              <button class="btn btn-secondary" onclick="clearSearch()" style="margin-top: 14px; padding: 6px 14px; font-size: 12px;">Clear Search Filter</button>
+            </td>
+          `;
+          tbody.appendChild(emptyTr);
+        }
+      } else if (existingEmpty) {
+        existingEmpty.remove();
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('searchBox').value = '';
+      filterTable();
+    }
+
+    function addSampleLead() {
+      const id = leads.length + 1;
+      leads.unshift({
+        id,
+        name: "Alex Mercer",
+        role: "Chief Revenue Officer",
+        company: "Stratos Logic",
+        industry: "Enterprise AI",
+        status: "Pending",
+        intent: "Sourcing external development partner",
+        email: "alex@stratoslogic.com",
+        pitch: "Hi Alex, saw Stratos Logic is scaling engineering bandwidth. Panda Labs delivers turnkey SaaS architectures within 3-week sprint windows."
+      });
+      renderLeads();
+      document.getElementById('totalProspects').innerText = (1248 + leads.length - 5);
+      showToast("Added prospect Alex Mercer (Stratos Logic)");
+    }
+
+    function exportData() {
+      let csv = "\uFEFFName,Role,Company,Industry,Status,Email\n";
+      leads.forEach(l => {
+        const sanitize = (val) => {
+          let s = String(val).replace(/"/g, '""');
+          if (/^[=+\-@]/.test(s)) s = "'" + s;
+          return `"${s}"`;
+        };
+        csv += `${sanitize(l.name)},${sanitize(l.role)},${sanitize(l.company)},${sanitize(l.industry)},${sanitize(l.status)},${sanitize(l.email)}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'LeadScout_AI_Prospects.csv');
+      a.click();
+      showToast("Exported prospects to RFC-4180 CSV");
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+
+    renderLeads();
+  </script>
+</body>
+</html>
