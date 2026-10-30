@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicPulse | Patient Intake & Automated Triage Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.css">
+  <script src="../backend-simulations.js"></script>
+  <style>
+    :root {
+      --bg-canvas: #07090e;
+      --bg-surface-1: rgba(17, 24, 39, 0.75);
+      --bg-surface-2: rgba(30, 41, 59, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-default: rgba(255, 255, 255, 0.12);
+      --border-active: rgba(13, 148, 136, 0.5);
+      --teal: #0d9488;
+      --teal-hover: #0f766e;
+      --danger-rose: #f43f5e;
+      --accent-cyan: #06b6d4;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-canvas);
+      background-image: radial-gradient(at 50% 0%, rgba(13, 148, 136, 0.14) 0px, transparent 60%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 30px 20px;
+      min-height: 100vh;
+    }
+    .container { max-width: 840px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .badge {
+      background: rgba(13, 148, 136, 0.15);
+      border: 1px solid rgba(13, 148, 136, 0.3);
+      color: #2dd4bf;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    .step-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      opacity: 0.5;
+      transition: all 0.3s;
+    }
+    .step-item.active { opacity: 1; }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid var(--border-default);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .step-item.active .step-num { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .step-label { font-size: 13px; font-weight: 600; }
+    
+    .card {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--border-default);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--teal); }
+    .btn {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 14px;
+    }
+    .btn:hover { background: var(--teal-hover); }
+    .btn-secondary { background: #334155; }
+    .btn-secondary:hover { background: #475569; }
+    .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 10px; }
+    .slot-btn {
+      background: #0f172a;
+      border: 1px solid var(--border-default);
+      color: #e2e8f0;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .slot-btn:hover, .slot-btn.selected { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .triage-box {
+      background: rgba(13, 148, 136, 0.1);
+      border-left: 4px solid var(--teal);
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #99f6e4;
+      transition: border-color 0.3s;
+    }
+
+    /* Admin Drawer */
+    .admin-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+    }
+    .admin-drawer-overlay.open { display: block; }
+    .admin-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 480px;
+      max-width: 95vw;
+      background: #0a0f1a;
+      border-left: 1px solid var(--border-default);
+      box-shadow: -10px 0 40px rgba(0,0,0,0.7);
+      z-index: 101;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-snappy);
+      padding: 32px 28px;
+      overflow-y: auto;
+    }
+    .admin-drawer.open { transform: translateX(0); }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+      body { padding: 20px 14px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .card { padding: 20px; }
+      .card div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 480px) {
+      .stepper { flex-direction: column; gap: 12px; }
+      .step-item { display: flex; align-items: center; gap: 12px; text-align: left; }
+      .step-num { margin-bottom: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 26px;">🩺</span>
+        <div>
+          <h1 style="font-size: 20px; font-weight: 700;">ClinicPulse</h1>
+          <p style="font-size: 12px; color: var(--muted);">Intelligent Patient Triage & Booking Infrastructure</p>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="badge">HIPAA Compliant</span>
+        <button class="btn btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="toggleAdmin()">Admin Queue View</button>
+      </div>
+    </div>
+
+    <div class="stepper" aria-label="Intake Progress">
+      <div class="step-item active" id="st1">
+        <div class="step-num">1</div>
+        <div class="step-label">Patient Intake</div>
+      </div>
+      <div class="step-item" id="st2">
+        <div class="step-num">2</div>
+        <div class="step-label">AI Triage & Slot</div>
+      </div>
+      <div class="step-item" id="st3">
+        <div class="step-num">3</div>
+        <div class="step-label">Confirmation</div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="card" id="step1View">
+      <h2 style="font-size: 18px; margin-bottom: 16px;">1. Patient Demographics & Primary Symptoms</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label for="pName">Full Name</label>
+          <input type="text" id="pName" value="Jonathan Hayes" placeholder="e.g. Jane Doe" required>
+        </div>
+        <div class="form-group">
+          <label for="pPhone">Phone Number (for SMS appointment alerts)</label>
+          <input type="text" id="pPhone" value="+1 (555) 234-8910" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="pReason">Primary Reason for Visit</label>
+        <select id="pReason" onchange="updateTriage()">
+          <option value="routine">Routine Checkup / General Consultation</option>
+          <option value="acute" selected>Acute Joint Pain / Sports Injury</option>
+          <option value="dermatology">Dermatology Skin Screen</option>
+          <option value="cardio">Cardiovascular Check & ECG</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="pDesc">Describe Symptoms & Duration</label>
+        <textarea id="pDesc" rows="3">Sharp pain in right knee after sprint workouts, persisting for 6 days. Mild swelling in evenings.</textarea>
+      </div>
+      <div style="text-align: right;">
+        <button class="btn" onclick="nextStep(2)">Proceed to AI Triage & Slot Selection →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card" id="step2View" style="display: none;">
+      <h2 style="font-size: 18px; margin-bottom: 16px;">2. AI Clinical Triage & Specialist Matching</h2>
+      <div class="triage-box" id="triageAssessment">
+        <strong>⚡ Automated AI Triage Assessment (ESI-3):</strong><br>
+        Symptoms suggest subacute patellar tendon stress or minor meniscus irritation. Recommended specialist: <strong>Dr. Evelyn Reed (Orthopedics & Sports Medicine)</strong>. Urgency: Moderate (Schedule within 48h).
+      </div>
+
+      <div style="margin-top: 24px;">
+        <label for="slotSelectHeader">Select Preferred Date & Available Slots</label>
+        <div id="slotSelectHeader" style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Thursday, October 29, 2026</div>
+        <div class="slot-grid">
+          <div class="slot-btn" onclick="selectSlot(this)">09:00 AM</div>
+          <div class="slot-btn selected" onclick="selectSlot(this)">10:30 AM</div>
+          <div class="slot-btn" onclick="selectSlot(this)">01:15 PM</div>
+          <div class="slot-btn" onclick="selectSlot(this)">03:00 PM</div>
+          <div class="slot-btn" onclick="selectSlot(this)">04:45 PM</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+        <button class="btn btn-secondary" onclick="nextStep(1)">← Back</button>
+        <button class="btn" onclick="nextStep(3)">Confirm Booking & Dispatch SMS →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card" id="step3View" style="display: none; text-align: center; padding: 40px 20px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+      <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 8px;">Appointment Confirmed!</h2>
+      <p id="confirmSummary" style="color: var(--muted); font-size: 14px; max-width: 500px; margin: 0 auto 24px auto;">
+        Patient Jonathan Hayes is scheduled with <strong>Dr. Evelyn Reed</strong> on Thursday, Oct 29 at 10:30 AM.
+      </p>
+
+      <div style="background: #0f172a; border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; max-width: 450px; margin: 0 auto 24px auto; text-align: left;">
+        <div style="font-size: 11px; color: #2dd4bf; font-weight: 700; margin-bottom: 4px;">DISPATCHED SMS NOTIFICATION</div>
+        <div id="smsPreviewText" style="font-size: 13px; color: #cbd5e1; line-height: 1.4;">
+          "ClinicPulse: Hello Jonathan Hayes, your consultation is set for Oct 29 at 10:30 AM. Reply 1 to confirm, 2 to reschedule."
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <button class="btn" onclick="downloadICS()">📅 Download Calendar Invite (.ics)</button>
+        <button class="btn btn-secondary" onclick="resetForm()">New Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Queue Drawer -->
+  <div class="admin-drawer-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
+  <aside class="admin-drawer" id="adminDrawer" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 700; color: #fff;" id="adminTitle">Clinical Triage & Queue Monitor</h3>
+      <button style="background: none; border: none; color: #9ca3af; font-size: 20px; cursor: pointer;" onclick="toggleAdmin()">✕</button>
+    </div>
+    <div style="margin-bottom: 20px;">
+      <div style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Active Today</div>
+      <div style="font-size: 22px; font-weight: 800; color: #fff; margin-top: 4px;">14 Patients Triaged</div>
+      <div style="font-size: 12px; color: #2dd4bf; margin-top: 2px;">98% Provider Schedule Adherence</div>
+    </div>
+    <div style="background: #0f172a; border: 1px solid var(--border-default); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; color: #cbd5e1;">
+      <strong>HIPAA § 164.312(b) Audit Trail:</strong><br>
+      • Ingestion hash: <code>0x8f2a...c4b1</code><br>
+      • Triage algorithm: Dual-engine vitals + NLP<br>
+      • Emergency Index: ESI-3 (Moderate urgency)<br>
+      • SMS Webhook: Twilio status <code>delivered</code> (240ms)
+    </div>
+  </aside>
+
+  <script>
+    let chosenSlot = "10:30 AM";
+    let assignedDoctor = "Dr. Evelyn Reed (Orthopedics & Sports Medicine)";
+
+    function updateTriage() {
+      const reason = document.getElementById('pReason').value;
+      const triageBox = document.getElementById('triageAssessment');
+      if (reason === 'cardio') {
+        assignedDoctor = "Dr. Marcus Brody (Cardiology & Internal Medicine)";
+        triageBox.innerHTML = `<strong>⚡ Urgent AI Triage Assessment (ESI-2):</strong><br>Reported cardiovascular symptoms warrant expedited evaluation. Matched specialist: <strong>${assignedDoctor}</strong>. Urgency: Urgent (Schedule within 12h). Priority slot allocated.`;
+        triageBox.style.borderLeftColor = 'var(--danger-rose)';
+      } else if (reason === 'acute') {
+        assignedDoctor = "Dr. Evelyn Reed (Orthopedics & Sports Medicine)";
+        triageBox.innerHTML = `<strong>⚡ Automated AI Triage Assessment (ESI-3):</strong><br>Symptoms suggest subacute patellar tendon stress or minor meniscus irritation. Matched specialist: <strong>${assignedDoctor}</strong>. Urgency: Moderate (Schedule within 48h).`;
+        triageBox.style.borderLeftColor = 'var(--teal)';
+      } else if (reason === 'dermatology') {
+        assignedDoctor = "Dr. Aisha Patel (Dermatology)";
+        triageBox.innerHTML = `<strong>⚡ Routine AI Triage Assessment (ESI-4):</strong><br>Dermatological screening categorized as non-emergent elective care. Matched specialist: <strong>${assignedDoctor}</strong>. Urgency: Routine (Schedule within 5 days).`;
+        triageBox.style.borderLeftColor = 'var(--accent-cyan)';
+      } else {
+        assignedDoctor = "Dr. Nathan Cole (Primary Care)";
+        triageBox.innerHTML = `<strong>⚡ General AI Triage Assessment (ESI-4):</strong><br>Preventative wellness checkup. Matched specialist: <strong>${assignedDoctor}</strong>. Urgency: Standard outpatient care.`;
+        triageBox.style.borderLeftColor = 'var(--teal)';
+      }
+    }
+
+    function nextStep(step) {
+      if (step === 2) {
+        const pName = document.getElementById('pName').value.trim();
+        const pPhone = document.getElementById('pPhone').value.trim();
+        if (!pName || !pPhone) {
+          alert("Patient name and valid phone are required before proceeding to triage.");
+          return;
+        }
+      }
+
+      if (step === 3) {
+        const pName = document.getElementById('pName').value.trim();
+        document.getElementById('confirmSummary').innerHTML = `Patient <strong>${pName}</strong> is scheduled with <strong>${assignedDoctor}</strong> on Thursday, Oct 29 at <strong>${chosenSlot}</strong>.`;
+        document.getElementById('smsPreviewText').innerText = `"ClinicPulse: Hello ${pName}, your appointment with ${assignedDoctor.split('(')[0].trim()} is confirmed for Oct 29 at ${chosenSlot}. Reply 1 to confirm, 2 to reschedule."`;
+      }
+
+      document.getElementById('step1View').style.display = (step === 1) ? 'block' : 'none';
+      document.getElementById('step2View').style.display = (step === 2) ? 'block' : 'none';
+      document.getElementById('step3View').style.display = (step === 3) ? 'block' : 'none';
+
+      document.getElementById('st1').className = (step >= 1) ? 'step-item active completed' : 'step-item';
+      document.getElementById('st2').className = (step >= 2) ? 'step-item active completed' : 'step-item';
+      document.getElementById('st3').className = (step === 3) ? 'step-item active completed' : 'step-item';
+    }
+
+    function selectSlot(el) {
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      el.classList.add('selected');
+      chosenSlot = el.innerText;
+    }
+
+    function downloadICS() {
+      const pName = document.getElementById('pName').value.trim() || 'Patient';
+      const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//ClinicPulse//Patient Booking//EN\nBEGIN:VEVENT\nSUMMARY:ClinicPulse Consultation - ${assignedDoctor.split('(')[0].trim()}\nDESCRIPTION:Patient intake consultation for ${pName} confirmed at ${chosenSlot}.\nDTSTART:20261029T103000\nDTEND:20261029T111500\nEND:VEVENT\nEND:VCALENDAR`;
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `ClinicPulse_Appointment_${pName.replace(/\s+/g, '_')}.ics`;
+      a.click();
+    }
+
+    function toggleAdmin() {
+      const drawer = document.getElementById('adminDrawer');
+      const overlay = document.getElementById('adminOverlay');
+      const isOpen = drawer.classList.contains('open');
+      drawer.classList.toggle('open', !isOpen);
+      overlay.classList.toggle('open', !isOpen);
+    }
+
+    function resetForm() {
+      nextStep(1);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const drawer = document.getElementById('adminDrawer');
+        const overlay = document.getElementById('adminOverlay');
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
