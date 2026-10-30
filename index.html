@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panda Labs | Enterprise AI Web Apps & SaaS MVPs</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.css">
+  <script src="backend-simulations.js"></script>
+  <style>
+    :root {
+      --bg-canvas: #07090e;
+      --bg-surface-1: rgba(17, 24, 39, 0.75);
+      --bg-surface-2: rgba(30, 41, 59, 0.65);
+      --bg-surface-elevated: rgba(31, 41, 55, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-default: rgba(255, 255, 255, 0.12);
+      --border-active: rgba(99, 102, 241, 0.5);
+      --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      --accent-indigo: #6366f1;
+      --accent-indigo-hover: #4f46e5;
+      --accent-cyan: #06b6d4;
+      --success-emerald: #10b981;
+      --warning-amber: #f59e0b;
+      --danger-rose: #f43f5e;
+      --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-canvas);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.14) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    .hero {
+      text-align: center;
+      max-width: 920px;
+      margin: 0 auto 40px auto;
+    }
+    .hero-badge-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .trust-chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .trust-chip {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .trust-chip span { color: var(--accent-cyan); font-weight: 700; }
+    .filters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 900px;
+      margin: 0 auto 36px auto;
+    }
+    .filter-btn {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      padding: 8px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--ease-snappy);
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent-indigo);
+      border-color: var(--accent-indigo);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 24px;
+      max-width: 1240px;
+      margin: 0 auto 60px auto;
+    }
+    .project-card {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--glass-highlight);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s var(--ease-snappy);
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-active);
+      box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6), 0 0 24px -4px rgba(99, 102, 241, 0.25);
+    }
+    .card-top {
+      padding: 24px;
+      flex: 1;
+    }
+    .project-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+    }
+    .project-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    .project-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-bottom: 18px;
+    }
+    .stack-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .stack-tag {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-subtle);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .card-footer {
+      padding: 16px 24px;
+      background: rgba(10, 15, 26, 0.6);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .rate-chip {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--success-emerald);
+      letter-spacing: -0.2px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      background: var(--accent-indigo);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--accent-indigo-hover); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-default);
+      color: #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #94a3b8;
+    }
+
+    /* Modal & Viewport Switcher */
+    .preview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      z-index: 100;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .preview-modal.open { display: flex; }
+    .modal-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .viewport-controls {
+      display: flex;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
+    }
+    .viewport-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .viewport-btn.active, .viewport-btn:hover {
+      background: var(--accent-indigo);
+      color: #fff;
+    }
+    .frame-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: all 0.3s var(--ease-snappy);
+    }
+    .modal-frame {
+      border: 1px solid #334155;
+      border-radius: 12px;
+      background: #000;
+      width: 100%;
+      height: 100%;
+      transition: width 0.3s ease;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+
+    /* Tech Deep Dive Drawer */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 540px;
+      max-width: 95vw;
+      background: #0a0f1a;
+      border-left: 1px solid var(--border-default);
+      box-shadow: -10px 0 40px rgba(0,0,0,0.7);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.3s var(--ease-snappy);
+      padding: 32px 28px;
+      overflow-y: auto;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+    }
+    .spec-block {
+      background: rgba(17, 24, 39, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .spec-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .code-preview {
+      background: #030712;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #a5b4fc;
+      overflow-x: auto;
+      line-height: 1.4;
+    }
+
+    /* Responsive Queries */
+    @media (max-width: 768px) {
+      body { padding: 24px 16px; }
+      .hero h1 { font-size: 32px; }
+      .grid { grid-template-columns: 1fr; }
+      .card-footer { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .btn-group { width: 100%; }
+      .btn-group .btn, .btn-group .btn-outline { flex: 1; justify-content: center; }
+      .modal-bar { flex-direction: column; align-items: stretch; }
+      .viewport-controls { justify-content: center; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 26px; }
+      .trust-chips { gap: 6px; }
+      .trust-chip { font-size: 11px; padding: 4px 10px; }
+      .filter-btn { font-size: 12px; padding: 6px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-badge-wrap">
+      <div class="pulse-dot"></div>
+      <span>Top 1% AI Engineering Agency • Upwork Enterprise</span>
+    </div>
+    <h1>Turnkey AI Web Apps & SaaS MVPs</h1>
+    <p>
+      Engineered for high-growth venture studios, serial founders, and enterprise teams. We deliver end-to-end production software in 2–4 weeks with modern TypeScript, FastAPI, pgvector vector search, and Stripe monetization.
+    </p>
+
+    <div class="trust-chips">
+      <div class="trust-chip"><span>✓</span> 2–4 Week Delivery</div>
+      <div class="trust-chip"><span>✓</span> Zero Vendor Lock-in</div>
+      <div class="trust-chip"><span>✓</span> 100% Full IP Transfer</div>
+      <div class="trust-chip"><span>✓</span> SOC-2 Type II Groundwork</div>
+      <div class="trust-chip"><span>✓</span> 99.9% Uptime Architecture</div>
+    </div>
+  </header>
+
+  <nav class="filters" aria-label="Project Categories">
+    <button class="filter-btn active" onclick="filterCategory('all', this)">All Solutions</button>
+    <button class="filter-btn" onclick="filterCategory('sales', this)">B2B Sales</button>
+    <button class="filter-btn" onclick="filterCategory('legal', this)">LegalTech</button>
+    <button class="filter-btn" onclick="filterCategory('fintech', this)">FinTech</button>
+    <button class="filter-btn" onclick="filterCategory('health', this)">HealthTech</button>
+    <button class="filter-btn" onclick="filterCategory('creative', this)">Creative AI</button>
+  </nav>
+
+  <main class="grid" id="projectGrid">
+    <!-- Card 1 -->
+    <article class="project-card" data-category="sales">
+      <div class="card-top">
+        <div class="project-tag">Sales Automation • B2B SaaS</div>
+        <h2 class="project-title">01. LeadScout AI</h2>
+        <p class="project-desc">Autonomous prospect enrichment engine that mines buying intent and writes hyper-tailored outbound email hooks with API credit metering.</p>
+        <div class="stack-tags">
+          <span class="stack-tag">Next.js 14</span>
+          <span class="stack-tag">Tailwind CSS</span>
+          <span class="stack-tag">FastAPI</span>
+          <span class="stack-tag">PostgreSQL</span>
+          <span class="stack-tag">Apollo Webhook</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="rate-chip">Value: $4,500 – $9,000</span>
+        <div class="btn-group">
+          <button class="btn-outline" onclick="openTechDrawer('leadscout')">Architecture ⚙</button>
+          <button class="btn" onclick="openDemo('01-leadscout-ai/index.html', 'LeadScout AI')">Launch Demo →</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 2 -->
+    <article class="project-card" data-category="legal">
+      <div class="card-top">
+        <div class="project-tag">LegalTech • Enterprise AI</div>
+        <h2 class="project-title">02. DocuQuery AI</h2>
+        <p class="project-desc">Enterprise contract intelligence assistant with citation grounding, multi-format document chunking, and sub-50ms pgvector search.</p>
+        <div class="stack-tags">
+          <span class="stack-tag">React / TypeScript</span>
+          <span class="stack-tag">FastAPI</span>
+          <span class="stack-tag">pgvector / HNSW</span>
+          <span class="stack-tag">Supabase Auth</span>
+          <span class="stack-tag">SOC-2 Triage</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="rate-chip">Value: $6,000 – $14,000</span>
+        <div class="btn-group">
+          <button class="btn-outline" onclick="openTechDrawer('docuquery')">Architecture ⚙</button>
+          <button class="btn" onclick="openDemo('02-docuquery/index.html', 'DocuQuery AI')">Launch Demo →</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 3 -->
+    <article class="project-card" data-category="fintech">
+      <div class="card-top">
+        <div class="project-tag">FinTech • SaaS Metrics</div>
+        <h2 class="project-title">03. MetricFlow</h2>
+        <p class="project-desc">Real-time subscription revenue portal featuring Stripe webhook listeners, dynamic MRR/ARR cohorts, and automated customer churn risk alerts.</p>
+        <div class="stack-tags">
+          <span class="stack-tag">Next.js</span>
+          <span class="stack-tag">Chart.js / Tremor</span>
+          <span class="stack-tag">Stripe Webhooks</span>
+          <span class="stack-tag">ML Churn Scoring</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="rate-chip">Value: $5,000 – $11,000</span>
+        <div class="btn-group">
+          <button class="btn-outline" onclick="openTechDrawer('metricflow')">Architecture ⚙</button>
+          <button class="btn" onclick="openDemo('03-metricflow/index.html', 'MetricFlow')">Launch Demo →</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 4 -->
+    <article class="project-card" data-category="health">
+      <div class="card-top">
+        <div class="project-tag">HealthTech • Triage Infrastructure</div>
+        <h2 class="project-title">04. ClinicPulse</h2>
+        <p class="project-desc">Dynamic 3-step patient intake funnel with automated clinical triage, Cal.com calendar scheduling, and automated SMS reminder dispatch.</p>
+        <div class="stack-tags">
+          <span class="stack-tag">Next.js / TypeScript</span>
+          <span class="stack-tag">Tailwind</span>
+          <span class="stack-tag">Cal.com API</span>
+          <span class="stack-tag">Twilio SMS</span>
+          <span class="stack-tag">HIPAA Guardrails</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="rate-chip">Value: $4,000 – $8,500</span>
+        <div class="btn-group">
+          <button class="btn-outline" onclick="openTechDrawer('clinicpulse')">Architecture ⚙</button>
+          <button class="btn" onclick="openDemo('04-clinicpulse/index.html', 'ClinicPulse')">Launch Demo →</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- Card 5 -->
+    <article class="project-card" data-category="creative">
+      <div class="card-top">
+        <div class="project-tag">MarTech • Creative Automation</div>
+        <h2 class="project-title">05. BrandForge AI</h2>
+        <p class="project-desc">Multi-channel campaign generator creating synchronized LinkedIn thought leadership, Twitter/X threads, and branded banner graphics in one click.</p>
+        <div class="stack-tags">
+          <span class="stack-tag">React</span>
+          <span class="stack-tag">HTML5 Canvas</span>
+          <span class="stack-tag">FastAPI</span>
+          <span class="stack-tag">Claude 3.5 API</span>
+          <span class="stack-tag">Zip Packager</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="rate-chip">Value: $3,500 – $7,500</span>
+        <div class="btn-group">
+          <button class="btn-outline" onclick="openTechDrawer('brandforge')">Architecture ⚙</button>
+          <button class="btn" onclick="openDemo('05-brandforge/index.html', 'BrandForge AI')">Launch Demo →</button>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Interactive Demo Modal with Viewport Switcher -->
+  <div class="preview-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-bar">
+      <h3 id="modalTitle" style="font-size: 16px; font-weight: 700;">Live Demo Preview</h3>
+      <div class="viewport-controls">
+        <button class="viewport-btn active" onclick="setViewport('100%')">Desktop (100%)</button>
+        <button class="viewport-btn" onclick="setViewport('768px')">Tablet (768px)</button>
+        <button class="viewport-btn" onclick="setViewport('375px')">Mobile (375px)</button>
+      </div>
+      <button onclick="closeDemo()" style="background: #334155; border: none; color: #fff; padding: 6px 14px; border-radius: 6px; cursor: pointer;">Close Preview ✕</button>
+    </div>
+    <div class="frame-container">
+      <iframe class="modal-frame" id="demoFrame" src="" title="AI SaaS Application Preview"></iframe>
+    </div>
+  </div>
+
+  <!-- Tech Deep Dive Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="closeTechDrawer()"></div>
+  <aside class="drawer" id="techDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-head">
+      <h3 id="drawerTitle" style="font-size: 18px; font-weight: 700; color: #fff;">System Architecture Spec</h3>
+      <button onclick="closeTechDrawer()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+    <div id="drawerBody"></div>
+  </aside>
+
+  <script>
+    const techSpecs = {
+      leadscout: {
+        title: 'LeadScout AI — Production Architecture',
+        budget: '$4,500 – $9,000 USD (2–3 Weeks)',
+        stack: 'Next.js 14, FastAPI, PostgreSQL, Redis Celery Worker, Apollo/Dropcontact Webhooks',
+        schema: 'CREATE TABLE leads (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  tenant_id UUID REFERENCES organizations(id),\n  email VARCHAR(255) NOT NULL UNIQUE,\n  buying_intent_score NUMERIC(3,2),\n  status VARCHAR(32) DEFAULT \'QUEUED\'\n);',
+        endpoints: ['POST /api/v1/enrichment/batch', 'GET /api/v1/leads/{id}/intent-hook', 'POST /api/v1/credits/reserve']
+      },
+      docuquery: {
+        title: 'DocuQuery AI — pgvector HNSW Engine',
+        budget: '$6,000 – $14,000 USD (3–4 Weeks)',
+        stack: 'React TypeScript, Python FastAPI, PostgreSQL pgvector, OpenAI text-embedding-3-small, Supabase RLS',
+        schema: 'CREATE TABLE document_chunks (\n  id UUID PRIMARY KEY,\n  document_id UUID REFERENCES documents(id),\n  content TEXT NOT NULL,\n  embedding vector(1536),\n  citation_label VARCHAR(64)\n);\nCREATE INDEX ON document_chunks USING hnsw (embedding vector_cosine_ops);',
+        endpoints: ['POST /api/v1/rag/query-stream', 'POST /api/v1/documents/index-pdf', 'GET /api/v1/citations/{clause_id}']
+      },
+      metricflow: {
+        title: 'MetricFlow — SaaS Telemetry & Stripe Webhooks',
+        budget: '$5,000 – $11,000 USD (2–3 Weeks)',
+        stack: 'Next.js App Router, Chart.js, Stripe SDK, PostgreSQL TimescaleDB, Python ML Churn Model',
+        schema: 'CREATE TABLE stripe_events (\n  id VARCHAR(128) PRIMARY KEY,\n  type VARCHAR(64) NOT NULL,\n  processed_at TIMESTAMPTZ DEFAULT NOW(),\n  idempotency_key UUID UNIQUE\n);',
+        endpoints: ['POST /webhooks/stripe', 'GET /api/v1/metrics/mrr-cohorts', 'POST /api/v1/playbooks/auto-retention']
+      },
+      clinicpulse: {
+        title: 'ClinicPulse — Clinical Triage & Appointment Engine',
+        budget: '$4,000 – $8,500 USD (2 Weeks)',
+        stack: 'TypeScript, Tailwind, Cal.com API, Twilio Programmable SMS, HIPAA Audit Storage',
+        schema: 'CREATE TABLE triage_records (\n  id UUID PRIMARY KEY,\n  patient_hash VARCHAR(64) NOT NULL,\n  esi_level INT CHECK (esi_level BETWEEN 1 AND 5),\n  specialist_slug VARCHAR(64),\n  slot_reserved_at TIMESTAMPTZ\n);',
+        endpoints: ['POST /api/v1/triage/evaluate', 'POST /api/v1/appointments/book', 'POST /api/v1/sms/dispatch-reminder']
+      },
+      brandforge: {
+        title: 'BrandForge AI — Omnichannel Creative Automation',
+        budget: '$3,500 – $7,500 USD (2 Weeks)',
+        stack: 'React 18, HTML5 Canvas, Claude 3.5 Sonnet API, JSZip Client Bundler, Python Image Synthesizer',
+        schema: 'CREATE TABLE brand_campaigns (\n  id UUID PRIMARY KEY,\n  brand_name VARCHAR(128),\n  color_hex VARCHAR(7),\n  formats JSONB,\n  token_cost NUMERIC(8,4)\n);',
+        endpoints: ['POST /api/v1/generate/all-channels', 'POST /api/v1/assets/render-banner', 'GET /api/v1/campaigns/export-zip']
+      }
+    };
+
+    function openDemo(url, title) {
+      document.getElementById('modalTitle').innerText = title + ' — Live Interactive Client Demo';
+      document.getElementById('demoFrame').src = url;
+      document.getElementById('modal').classList.add('open');
+      setViewport('100%');
+    }
+    function closeDemo() {
+      document.getElementById('demoFrame').src = '';
+      document.getElementById('modal').classList.remove('open');
+    }
+    function setViewport(width) {
+      const frame = document.getElementById('demoFrame');
+      frame.style.width = width;
+      document.querySelectorAll('.viewport-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.includes(width));
+      });
+    }
+
+    function filterCategory(cat, el) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      const cards = document.querySelectorAll('.project-card');
+      cards.forEach(card => {
+        if (cat === 'all' || card.dataset.category === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function openTechDrawer(key) {
+      const spec = techSpecs[key];
+      if (!spec) return;
+      document.getElementById('drawerTitle').innerText = spec.title;
+      document.getElementById('drawerBody').innerHTML = `
+        <div class="spec-block">
+          <div class="spec-title">Commercial Deliverable Value</div>
+          <div style="font-size: 16px; font-weight: 700; color: #10b981;">${spec.budget}</div>
+        </div>
+        <div class="spec-block">
+          <div class="spec-title">Production Tech Stack</div>
+          <div style="font-size: 13px; color: #cbd5e1;">${spec.stack}</div>
+        </div>
+        <div class="spec-block">
+          <div class="spec-title">Optimized Database Schema / DDL</div>
+          <div class="code-preview">${spec.schema}</div>
+        </div>
+        <div class="spec-block">
+          <div class="spec-title">FastAPI / REST API Endpoints</div>
+          <ul style="padding-left: 20px; font-size: 13px; color: #94a3b8;">
+            ${spec.endpoints.map(e => `<li><code>${e}</code></li>`).join('')}
+          </ul>
+        </div>
+      `;
+      document.getElementById('techDrawer').classList.add('open');
+      document.getElementById('drawerOverlay').classList.add('open');
+    }
+
+    function closeTechDrawer() {
+      document.getElementById('techDrawer').classList.remove('open');
+      document.getElementById('drawerOverlay').classList.remove('open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDemo();
+        closeTechDrawer();
+      }
+    });
+  </script>
+</body>
+</html>
