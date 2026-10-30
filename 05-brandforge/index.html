@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrandForge AI | Multi-Channel Social Content Engine</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/inter-ui/3.19.3/inter.css">
+  <script src="../backend-simulations.js"></script>
+  <style>
+    :root {
+      --bg-canvas: #07090e;
+      --bg-surface-1: rgba(24, 24, 27, 0.75);
+      --bg-surface-2: rgba(39, 39, 42, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-default: rgba(255, 255, 255, 0.12);
+      --purple: #8b5cf6;
+      --purple-hover: #7c3aed;
+      --brand-accent: #ea580c;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-canvas);
+      background-image: radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.14) 0px, transparent 50%);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 30px 24px;
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--bg-surface-1);
+      border: 1px solid var(--border-default);
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 24px;
+    }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      background: #09090b;
+      border: 1px solid var(--border-default);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--purple); }
+    .btn {
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover { background: var(--purple-hover); }
+    .btn-secondary { background: #27272a; color: #e4e4e7; }
+    .btn-secondary:hover { background: #3f3f46; }
+    .preview-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-default);
+      padding-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: 0.2s;
+    }
+    .tab.active { background: #27272a; color: #fff; }
+    .content-box {
+      background: #09090b;
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #e4e4e7;
+      min-height: 260px;
+      white-space: pre-line;
+    }
+    .banner-preview {
+      border-radius: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 200px;
+      margin-top: 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+    .char-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+    }
+
+    /* Media Queries */
+    @media (max-width: 768px) {
+      body { padding: 20px 14px; }
+      .layout { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 480px) {
+      .preview-tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="background: linear-gradient(135deg, #8b5cf6, #ec4899); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px;">🎨</div>
+      <div>
+        <h1 style="font-size: 20px; font-weight: 700;">BrandForge AI</h1>
+        <p style="font-size: 12px; color: var(--muted);">Autonomous Cross-Platform Campaign Asset Generator</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <span style="font-size: 12px; color: #a1a1aa;">⚡ Claude 3.5 Sonnet • 642 Tokens ($0.0038)</span>
+      <button class="btn btn-secondary" onclick="exportPack()">📦 Export Campaign Pack (.json)</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="card">
+      <h2 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Brand Context & Campaign Brief</h2>
+
+      <div class="form-group">
+        <label for="brandName">Brand / Product Name</label>
+        <input type="text" id="brandName" value="Kanso Kitchenware">
+      </div>
+
+      <div class="form-group">
+        <label for="campaignTheme">Campaign Theme / Offer</label>
+        <input type="text" id="campaignTheme" value="Autumn Japanese Damascus Chef Knife Launch">
+      </div>
+
+      <div class="form-group">
+        <label for="brandTone">Tone of Voice</label>
+        <select id="brandTone">
+          <option value="minimalist" selected>Minimalist, Premium & Artisanal</option>
+          <option value="energetic">Energetic & Direct Response</option>
+          <option value="playful">Witty & Modern Meme Culture</option>
+          <option value="corporate">Authoritative B2B Thought Leader</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="brandColor">Primary Brand Hue</label>
+        <input type="color" id="brandColor" value="#ea580c" onchange="updateBannerTheme()" oninput="updateBannerTheme()" style="height: 40px; cursor: pointer; padding: 2px;">
+      </div>
+
+      <button class="btn" style="width: 100%;" onclick="generateAll()">
+        <span>⚡</span> Generate All Channel Formats
+      </button>
+    </div>
+
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div class="preview-tabs" style="margin-bottom: 0; border-bottom: none;">
+          <div class="tab active" onclick="switchTab('linkedin', this)">LinkedIn Thought Leadership</div>
+          <div class="tab" onclick="switchTab('twitter', this)">Twitter / X Viral Thread</div>
+          <div class="tab" onclick="switchTab('instagram', this)">Instagram Caption & Tags</div>
+        </div>
+        <span class="char-badge" id="charCounter">842 chars (Max 3,000)</span>
+      </div>
+
+      <div class="content-box" id="contentDisplay">
+Most kitchen knives dull after 3 months because industrial stamped steel sacrifices carbon density for machine speed.
+
+For the past 14 months, the Kanso atelier in Seki, Japan partnered with culinary masters to forge the Autumn 67-layer Damascus series.
+
+Key craftsmanship breakthroughs:
+• Cryogenic heat-treated VG-10 core (61±1 HRC)
+• 15° hand-honed blade edge angle
+• Ergonomic scorched walnut octagonal wa-handle
+
+Available in limited seasonal batches for discerning culinary professionals.
+
+Link in the comments for early collector access. #CulinaryArts #KitchenDesign #JapaneseCraftsmanship
+      </div>
+
+      <div class="banner-preview" id="bannerCard" style="background: linear-gradient(135deg, #18181b, #27272a); border: 2px solid #ea580c;">
+        <div>
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #ea580c; font-weight: 700;" id="bannerTag">KANSO ATELIER • AUTUMN RELEASE</span>
+          <h3 style="font-size: 22px; font-weight: 800; margin-top: 6px; color: #fff;" id="bannerHead">The Art of the 15° Edge</h3>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <span style="font-size: 12px; color: #a1a1aa;">Handcrafted in Seki, Japan</span>
+          <span id="bannerBtn" style="background: #ea580c; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 4px;">VIEW COLLECTION</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentChannel = 'linkedin';
+    const channels = {
+      linkedin: `Most kitchen knives dull after 3 months because industrial stamped steel sacrifices carbon density for machine speed.\n\nFor the past 14 months, the Kanso atelier in Seki, Japan partnered with culinary masters to forge the Autumn 67-layer Damascus series.\n\nKey craftsmanship breakthroughs:\n• Cryogenic heat-treated VG-10 core (61±1 HRC)\n• 15° hand-honed blade edge angle\n• Ergonomic scorched walnut octagonal wa-handle\n\nAvailable in limited seasonal batches for discerning culinary professionals.\n\nLink in the comments for early collector access. #CulinaryArts #KitchenDesign #JapaneseCraftsmanship`,
+      twitter: `1/ You are probably cutting with a dull knife and blaming your cooking technique.\n\nHere is how 67 layers of folded Damascus steel change home prep forever 🧵👇\n\n2/ Industrial knives are stamped out of sheet metal in 4 seconds.\nTraditional Japanese smiths forge and fold high-carbon steel 16 times to redistribute carbide clusters evenly.\n\n3/ The result? A knife that stays razor-sharp for 400+ cuts without a hone.\n\nExplore the batch: kansokitchen.com/autumn`,
+      instagram: `Uncompromising precision on the cutting board. ✨\n\nMeet the Autumn Damascus series — forged with 67 micro-layers of cryo-treated VG-10 steel and crowned with an octagonal scorched walnut handle.\n\nDrop a 🔪 below if your kitchen knife block needs an heirloom upgrade.\n.\n.\n#ChefsOfInstagram #KnifeSkills #DamascusSteel #JapaneseCulinary #KitchenEssentials #CulinaryDesign`
+    };
+
+    const charLimits = {
+      linkedin: 'Max 3,000 chars',
+      twitter: 'Max 280 chars per tweet',
+      instagram: 'Max 2,200 chars'
+    };
+
+    function switchTab(channel, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      currentChannel = channel;
+      const text = channels[channel];
+      document.getElementById('contentDisplay').innerText = text;
+      document.getElementById('charCounter').innerText = `${text.length} chars (${charLimits[channel]})`;
+    }
+
+    function updateBannerTheme() {
+      const color = document.getElementById('brandColor').value;
+      const banner = document.getElementById('bannerCard');
+      banner.style.borderColor = color;
+      document.getElementById('bannerTag').style.color = color;
+      document.getElementById('bannerBtn').style.backgroundColor = color;
+    }
+
+    function generateAll() {
+      const brand = document.getElementById('brandName').value;
+      const theme = document.getElementById('campaignTheme').value;
+      alert(`⚡ Generated multi-format campaign for ${brand}: "${theme}". Ready across LinkedIn, Twitter, and Instagram with synchronized asset banners.`);
+    }
+
+    function exportPack() {
+      const brand = document.getElementById('brandName').value;
+      const theme = document.getElementById('campaignTheme').value;
+      const color = document.getElementById('brandColor').value;
+      const payload = {
+        campaign_metadata: {
+          brand_name: brand,
+          campaign_theme: theme,
+          brand_color_hex: color,
+          generated_at: new Date().toISOString()
+        },
+        omnichannel_copy_deck: channels,
+        asset_specifications: {
+          banner_dimensions: "1200x630 (OpenGraph)",
+          color_palette: [color, "#18181b", "#27272a", "#fafafa"]
+        }
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `BrandForge_${brand.replace(/\s+/g, '_')}_Campaign.json`;
+      a.click();
+    }
+  </script>
+</body>
+</html>
